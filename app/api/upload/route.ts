@@ -1,12 +1,19 @@
+import crypto from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminStorage } from '@/lib/firebase-admin';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      return NextResponse.json({ error: 'Cloudinary ainda não foi configurado na Vercel.' }, { status: 500 });
+    }
+
     const body = await req.json();
-    const name = String(body.name || 'image.jpg');
     const contentType = String(body.contentType || 'image/jpeg');
     const size = Number(body.size || 0);
 
@@ -22,25 +29,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Imagem acima de 25 MB.' }, { status: 400 });
     }
 
-    const ext = name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-    const objectPath = `post-media/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${ext}`;
-    const bucket = adminStorage.bucket();
-    const object = bucket.file(objectPath);
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = 'instapilot/posts';
+    const stringToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+    const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
 
-    const [uploadUrl] = await object.getSignedUrl({
-      version: 'v4',
-      action: 'write',
-      expires: Date.now() + 15 * 60 * 1000,
-      contentType,
+    return NextResponse.json({
+      cloudName,
+      apiKey,
+      timestamp,
+      folder,
+      signature,
+      uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
     });
-
-    const [readUrl] = await object.getSignedUrl({
-      version: 'v4',
-      action: 'read',
-      expires: new Date('2035-03-01T00:00:00Z'),
-    });
-
-    return NextResponse.json({ uploadUrl, url: readUrl, path: objectPath });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Falha ao preparar upload.' }, { status: 500 });
   }
