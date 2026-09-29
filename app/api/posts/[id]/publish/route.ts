@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { decryptSecret } from '@/lib/crypto';
-import { publishImagePost } from '@/lib/instagram';
+import { publishInstagramImage } from '@/lib/buffer';
 
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -11,19 +10,12 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
   if (!postSnap.exists) return NextResponse.json({ error: 'Post não encontrado.' }, { status: 404 });
 
   const post = postSnap.data()!;
-  if (post.status === 'published') return NextResponse.json({ error: 'Esse post já foi publicado.' }, { status: 409 });
-
-  const connectionSnap = await adminDb.collection('instagram_connections').doc('primary').get();
-  if (!connectionSnap.exists) return NextResponse.json({ error: 'Conecte o Instagram antes de publicar.' }, { status: 400 });
-
-  const connection = connectionSnap.data()!;
+  if (post.status === 'published') return NextResponse.json({ error: 'Esse post já foi enviado.' }, { status: 409 });
 
   await postRef.update({ status: 'publishing', error_message: null });
 
   try {
-    const result = await publishImagePost({
-      igUserId: connection.ig_user_id,
-      token: decryptSecret(connection.access_token_enc),
+    const result = await publishInstagramImage({
       mediaUrl: post.media_url,
       caption: post.caption,
       altText: post.alt_text,
@@ -32,15 +24,22 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
     const publishedAt = new Date().toISOString();
     await postRef.update({
       status: 'published',
-      ig_container_id: result.containerId,
-      ig_media_id: result.mediaId,
+      buffer_post_id: result.postId,
+      buffer_channel_id: result.channel.id,
+      buffer_status: result.status,
+      external_link: result.externalLink,
       published_at: publishedAt,
       error_message: null,
     });
 
-    return NextResponse.json({ ok: true, mediaId: result.mediaId, publishedAt });
+    return NextResponse.json({
+      ok: true,
+      bufferPostId: result.postId,
+      publishedAt,
+      externalLink: result.externalLink,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Falha ao publicar.';
+    const message = error instanceof Error ? error.message : 'Falha ao publicar pelo Buffer.';
     await postRef.update({ status: 'failed', error_message: message });
     return NextResponse.json({ error: message }, { status: 500 });
   }
