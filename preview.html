@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InstaPilot Preview</title>
+  <style>
+    :root {
+      --bg:#f6f8fc; --panel:#fff; --line:rgba(15,23,42,.08); --text:#0f172a; --muted:#64748b;
+      --accent:#6d5efc; --accent2:#ff477e; --success:#14b87a;
+      --shadow:0 24px 70px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:
+      radial-gradient(circle at top right, rgba(255,71,126,.10), transparent 22%),
+      radial-gradient(circle at top left, rgba(109,94,252,.10), transparent 24%),
+      var(--bg); color:var(--text)}
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+    .brand{display:flex;align-items:center;gap:12px}.mark{width:36px;height:36px;border-radius:12px;position:relative;background:linear-gradient(135deg,#ff7a18 0%, #ff477e 55%, #7c4dff 100%);box-shadow:0 10px 26px rgba(124,77,255,.18)}
+    .mark:before{content:'';position:absolute;inset:22%;border-radius:10px;border:2px solid #fff}.mark:after{content:'';position:absolute;width:9px;height:9px;border-radius:50%;background:#fff;right:7px;top:7px}
+    .pill{padding:9px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:rgba(255,255,255,.85);font-size:13px}
+    .hero h1{font-size:clamp(34px,5vw,56px);line-height:.96;letter-spacing:-.05em;margin:8px 0 10px}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:700}.sub{max-width:700px;color:var(--muted);line-height:1.6}
+    .grid{display:grid;grid-template-columns:.86fr 1.14fr;gap:18px;margin-top:24px}.card{background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,251,255,.96));border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+    .head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-weight:700}.body{padding:20px}.row{display:flex;align-items:center;gap:14px}.avatar{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#ffb34d,#ff3f86 48%,#774dff);display:grid;place-items:center;color:#fff;font-weight:800}.hint{font-size:13px;color:var(--muted);margin-top:4px}
+    .btn{border:0;border-radius:14px;padding:11px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}.btn.secondary{background:#fff;border:1px solid rgba(15,23,42,.12);color:var(--text)}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.stat{padding:14px;border-radius:16px;background:#f8fbff;border:1px solid var(--line)}.stat b{font-size:24px;display:block}.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .field{margin-bottom:14px}.label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:7px}input,textarea{width:100%;border:1px solid rgba(15,23,42,.12);border-radius:14px;padding:12px 13px;font:inherit}textarea{min-height:148px}
+    .preview{display:grid;grid-template-columns:1fr 1fr;gap:18px}.phone{border-radius:28px;padding:10px;background:#dfe7f2;border:1px solid var(--line)}.screen{overflow:hidden;border-radius:21px;background:#fff}.ighead{height:54px;display:flex;align-items:center;padding:0 13px;gap:9px;border-bottom:1px solid #eee;font-size:12px;font-weight:700}.igavatar{width:29px;height:29px;border-radius:50%;background:linear-gradient(135deg,#ffb34d,#ff3f86 48%,#774dff)}.media{aspect-ratio:1/1;background:#edf1f7;display:grid;place-items:center;color:#7c8797}.actions{padding:12px 13px 2px;font-size:18px}.caption{padding:7px 13px 16px;font-size:12px;line-height:1.55}.queue{margin-top:18px}.item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}.thumb{width:64px;height:64px;border-radius:12px;background:#eef2f8}.badge{font-size:11px;border:1px solid var(--line);padding:6px 9px;border-radius:999px;color:var(--muted);background:#fff}
+    @media(max-width:880px){.grid,.preview{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="mark"></div>
+        <div>
+          <div style="font-weight:800;letter-spacing:-.03em">InstaPilot</div>
+          <div style="font-size:12px;color:#64748b">mini SaaS para aprovação e publicação</div>
+        </div>
+      </div>
+      <div class="pill">● revisão antes do envio</div>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Instagram workflow</div>
+      <h1>Crie. Revise.<br>Publique com calma.</h1>
+      <div class="sub">Interface clara, leve e pronta para apresentar ao cliente: conecta o Instagram, prepara o post, mostra o preview e só publica quando você aprovar.</div>
+    </section>
+
+    <div class="grid">
+      <section>
+        <div class="card">
+          <div class="head"><span>Conta conectada</span><span>Instagram</span></div>
+          <div class="body">
+            <div class="row">
+              <div class="avatar">IG</div>
+              <div style="flex:1">
+                <div style="font-weight:700">@seu_perfil</div>
+                <div class="hint">API oficial • pronta para publicar</div>
+              </div>
+              <button class="btn secondary">Conectar</button>
+            </div>
+            <div class="stats">
+              <div class="stat"><b>4</b><span>revisar</span></div>
+              <div class="stat"><b>12</b><span>publicados</span></div>
+              <div class="stat"><b>16</b><span>total</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="head"><span>Novo rascunho</span><span>✨</span></div>
+          <div class="body">
+            <div class="field"><label class="label">URL pública da imagem</label><input value="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80"></div>
+            <div class="field"><label class="label">Legenda</label><textarea>Hoje o foco foi entregar uma experiência mais clara e profissional para o cliente. Um passo a mais em direção a um Instagram mais consistente. ✨
+
+#design #socialmedia #instapilot</textarea></div>
+            <div class="field"><label class="label">Texto alternativo</label><input value="Mockup do painel InstaPilot em tema claro."></div>
+            <button class="btn primary" style="width:100%">Salvar para revisão</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="card">
+          <div class="head"><span>Pré-visualização</span><span class="badge">em revisão</span></div>
+          <div class="body preview">
+            <div class="phone">
+              <div class="screen">
+                <div class="ighead"><div class="igavatar"></div><span>seu_perfil</span><span style="margin-left:auto">⋯</span></div>
+                <div class="media"><img alt="preview" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" style="width:100%;height:100%;object-fit:cover"></div>
+                <div class="actions">♡ ⌁ ✈</div>
+                <div class="caption"><b>seu_perfil</b> Hoje o foco foi entregar uma experiência mais clara e profissional para o cliente. Um passo a mais em direção a um Instagram mais consistente. ✨</div>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow">Checklist</div>
+              <h2 style="margin:8px 0 14px;font-size:26px;letter-spacing:-.04em">Antes de publicar</h2>
+              <div class="sub" style="max-width:none">
+                1. Confira o corte e a nitidez da imagem.<br><br>
+                2. Revise a legenda, CTA e hashtags.<br><br>
+                3. Confirme se a conta conectada está correta.<br><br>
+                4. Só então clique em <b>Aprovar e publicar</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card queue">
+          <div class="head"><span>Fila de aprovação</span><span class="badge">3 itens</span></div>
+          <div class="body">
+            <div class="item">
+              <div class="thumb"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=200&q=80" style="width:100%;height:100%;object-fit:cover"></div>
+              <div>Hoje o foco foi entregar uma experiência mais clara e profissional...</div>
+              <div><div class="badge" style="margin-bottom:8px">draft</div><button class="btn primary" style="padding:8px 10px;font-size:12px">Aprovar e publicar</button></div>
+            </div>
+            <div class="item">
+              <div class="thumb"><img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=200&q=80" style="width:100%;height:100%;object-fit:cover"></div>
+              <div>Case novo entrando no ar, com visual mais limpo e foco em conversão...</div>
+              <div><div class="badge">published</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>
