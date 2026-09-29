@@ -24,19 +24,36 @@ export default function Dashboard() {
     setPosts(p.posts || []);
   }
 
-  useEffect(() => { refresh(); const q = new URLSearchParams(window.location.search); if (q.get('connected')) setMessage('Instagram conectado com sucesso.'); if (q.get('ig_error')) setError('Não foi possível conectar o Instagram. Confira as configurações da Meta.'); }, []);
+  useEffect(() => { refresh(); const q = new URLSearchParams(window.location.search); if (q.get('connected')) setMessage('Instagram conectado com sucesso.'); if (q.get('ig_error')) setError('Não foi possível conectar o Instagram. Confira as configurações.'); }, []);
 
   const stats = useMemo(() => ({ drafts: posts.filter(p => p.status === 'draft' || p.status === 'failed').length, published: posts.filter(p => p.status === 'published').length, total: posts.length }), [posts]);
 
   async function upload(file?: File) {
     if (!file) return;
-    setUploading(true); setError('');
-    const form = new FormData(); form.append('file', file);
-    const res = await fetch('/api/upload', { method: 'POST', body: form });
-    const data = await res.json();
-    setUploading(false);
-    if (!res.ok) return setError(data.error || 'Falha no upload.');
-    setMediaUrl(data.url);
+    setUploading(true); setError(''); setMessage('');
+    try {
+      const initRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: file.name, contentType: file.type || 'image/jpeg', size: file.size }),
+      });
+      const initData = await initRes.json();
+      if (!initRes.ok) throw new Error(initData.error || 'Falha ao preparar upload.');
+
+      const uploadRes = await fetch(initData.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'image/jpeg' },
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error(`Falha ao enviar imagem (${uploadRes.status}).`);
+
+      setMediaUrl(initData.url);
+      setMessage('Imagem carregada com sucesso.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha no upload.');
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function saveDraft() {
@@ -52,13 +69,13 @@ export default function Dashboard() {
     setBusy(true); setError(''); setMessage('');
     const res = await fetch(`/api/posts/${id}/publish`, { method:'POST' }); const data = await res.json(); setBusy(false);
     if (!res.ok) { setError(data.error || 'Falha ao publicar.'); await refresh(); return; }
-    setMessage('Post aprovado e publicado no Instagram.'); await refresh();
+    setMessage('Post aprovado e enviado ao Buffer.'); await refresh();
   }
 
   return <main className="shell">
     <header className="topbar"><div className="brand"><BrandMark /><div><div className="brand-name">InstaPilot</div><div className="brand-sub">mini SaaS para aprovação e publicação</div></div></div><div className="pill"><span className="dot" /> revisão antes do envio</div></header>
     <div className="container">
-      <section className="hero"><div><div className="eyebrow">Instagram workflow</div><h1>Crie. Revise. <br/>Publique com calma.</h1><div className="sub">Um painel claro, rápido e direto para montar posts, revisar o preview e publicar no Instagram pela API oficial da Meta — sem depender do app para cada postagem.</div></div></section>
+      <section className="hero"><div><div className="eyebrow">Instagram workflow</div><h1>Crie. Revise. <br/>Publique com calma.</h1><div className="sub">Monte seus posts, confira o preview e publique pelo Buffer sem depender do app do Instagram em cada envio.</div></div></section>
       {message && <div className="flash"><Check size={15} style={{verticalAlign:'-3px',marginRight:8}} />{message}</div>}
       {error && <div className="flash" style={{borderColor:'rgba(255,103,103,.22)',background:'rgba(255,103,103,.07)',color:'#ffb3b3'}}>{error}</div>}
       <div className="grid">
@@ -66,7 +83,7 @@ export default function Dashboard() {
           <div className="card">
             <div className="card-head"><div className="card-title">Conta conectada</div><Instagram size={17}/></div>
             <div className="card-body">
-              <div className="connection"><div className="avatar">IG</div><div className="connection-meta"><div className="connection-name">{connection.connected ? `@${connection.connection?.username}` : 'Nenhum Instagram conectado'}</div><div className="connection-hint">{connection.connected ? 'API oficial • pronta para publicar' : connection.setupRequired ? 'Configure Firebase + Meta primeiro' : 'Conecte uma conta Creator ou Business'}</div></div><a className="btn btn-secondary" href="/api/instagram/connect">{connection.connected ? 'Reconectar' : 'Conectar'}</a></div>
+              <div className="connection"><div className="avatar">IG</div><div className="connection-meta"><div className="connection-name">{connection.connected ? `@${connection.connection?.username}` : 'Nenhum Instagram conectado'}</div><div className="connection-hint">{connection.connected ? 'Buffer conectado • pronta para publicar' : connection.setupRequired ? 'Configure Firebase + Buffer primeiro' : 'Conecte seu Instagram no Buffer'}</div></div><a className="btn btn-secondary" href="/api/instagram/connect">{connection.connected ? 'Atualizar' : 'Conectar'}</a></div>
               <div className="stat-row"><div className="stat"><div className="stat-n">{stats.drafts}</div><div className="stat-l">revisar</div></div><div className="stat"><div className="stat-n">{stats.published}</div><div className="stat-l">publicados</div></div><div className="stat"><div className="stat-n">{stats.total}</div><div className="stat-l">total</div></div></div>
             </div>
           </div>
@@ -78,7 +95,7 @@ export default function Dashboard() {
               <div className="field"><label className="label">Legenda</label><textarea className="textarea" value={caption} onChange={e=>setCaption(e.target.value)} placeholder="Escreva a legenda que será publicada..."/></div>
               <div className="field"><label className="label">Texto alternativo (opcional)</label><input className="input" value={altText} onChange={e=>setAltText(e.target.value)} placeholder="Descrição acessível da imagem"/></div>
               <button className="btn btn-primary" style={{width:'100%'}} disabled={busy || !caption.trim() || !mediaUrl.trim()} onClick={saveDraft}><ImagePlus size={16}/>Salvar para revisão</button>
-              <div className="note">O MVP começa com posts de imagem única. Reels, carrossel e agendamento entram na próxima camada sem mudar a arquitetura.</div>
+              <div className="note">Posts de imagem única no MVP. Reels, carrossel e agendamento entram depois sem trocar a base.</div>
             </div>
           </div>
         </section>
