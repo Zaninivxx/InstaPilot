@@ -40,14 +40,19 @@ export default function Dashboard() {
       const initData = await initRes.json();
       if (!initRes.ok) throw new Error(initData.error || 'Falha ao preparar upload.');
 
-      const uploadRes = await fetch(initData.uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type || 'image/jpeg' },
-        body: file,
-      });
-      if (!uploadRes.ok) throw new Error(`Falha ao enviar imagem (${uploadRes.status}).`);
+      const form = new FormData();
+      form.append('file', file);
+      form.append('api_key', initData.apiKey);
+      form.append('timestamp', String(initData.timestamp));
+      form.append('folder', initData.folder);
+      form.append('signature', initData.signature);
 
-      setMediaUrl(initData.url);
+      const uploadRes = await fetch(initData.uploadUrl, { method: 'POST', body: form });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error?.message || `Falha ao enviar imagem (${uploadRes.status}).`);
+      if (!uploadData.secure_url) throw new Error('Cloudinary não retornou a URL da imagem.');
+
+      setMediaUrl(uploadData.secure_url);
       setMessage('Imagem carregada com sucesso.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Falha no upload.');
